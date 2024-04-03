@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'IMAGE_TAG', defaultValue: '', description: 'docker image tag version')
+    }
+
+    stages {
+        stage('Deploy application') {
+            steps {
+                sh 'docker stop my-java-dev || true'
+                sh 'docker rm my-java-dev || true'
+                sh 'docker run -p 8081:80 --name my-java-dev -d srank123/my_java:${IMAGE_TAG}'       
+            }
+        }
+    }
+    post {
+        always {
+            echo 'deploy done'
+        }
+    }
+}
