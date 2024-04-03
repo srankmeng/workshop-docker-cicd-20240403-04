@@ -15,7 +15,7 @@ Run container
 docker compose -f docker-compose-jenkins.yml up -d
 ```
 
-Go to `http://localhost:8080`
+Go to `http://localhost:5555`
 
 Copy your container id by `docker ps`
 
@@ -29,10 +29,10 @@ Choosing install suggested plugin and waiting
 
 Filling username, password, full name and email 
 
-Setting Jenkins URL: `http://localhost:8080/` (by default)
+Setting Jenkins URL: `http://localhost:5555/` (by default)
 
 ## 2. Add docker hub credential
-Go to `http://localhost:8080/manage/credentials/store/system/domain/_/`
+Go to `http://localhost:5555/manage/credentials/store/system/domain/_/`
 
 Click `Add credential` button
 
@@ -115,15 +115,15 @@ Add 'Push Docker Image to Docker Hub' stage after `stage('Run api automate test'
 
 ```
 stage('Push Docker Image to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker_hub'
-                , passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
-                    sh '''docker image tag java:1.0 xxxxx/my_java:$BUILD_NUMBER
-                          docker image push xxxxx/my_java:$BUILD_NUMBER'''
-                }        
-            }
-        }
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'docker_hub'
+        , passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+            sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+            sh '''docker image tag java:1.0 xxxxx/my_java:$BUILD_NUMBER
+                    docker image push xxxxx/my_java:$BUILD_NUMBER'''
+        }        
+    }
+}
 ```
 
 Go to docker hub to check images
@@ -139,7 +139,7 @@ stage('Deploy application') {
     steps {
         sh 'docker stop my-java-dev || true'
         sh 'docker rm my-java-dev || true'
-        sh 'docker run -p 8081:80 --name my-java-dev -d xxxxx/my_java:$BUILD_NUMBER'       
+        sh 'docker run -p 8081:8080 --name my-java-dev -d xxxxx/my_java:$BUILD_NUMBER'       
     }
 }
 ```
@@ -160,7 +160,7 @@ pipeline {
             steps {
                 sh 'docker stop my-java-dev || true'
                 sh 'docker rm my-java-dev || true'
-                sh 'docker run -p 8081:80 --name my-java-dev -d xxxxx/my_java:${IMAGE_TAG}'       
+                sh 'docker run -p 8081:8080 --name my-java-dev -d xxxxx/my_java:${IMAGE_TAG}'       
             }
         }
     }

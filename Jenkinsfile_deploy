@@ -9,7 +9,14 @@ pipeline {
             steps {
                 sh 'docker stop my-java-dev || true'
                 sh 'docker rm my-java-dev || true'
-                sh 'docker run -p 8081:80 --name my-java-dev -d srank123/my_java:${IMAGE_TAG}'       
+                sh 'docker run -p 8081:8080 --name my-java-dev -d srank123/my_java:${IMAGE_TAG}'       
+            }
+        }
+        stage('Deploy application sit') {
+            steps {
+                sh 'docker stop my-java-sit || true'
+                sh 'docker rm my-java-sit || true'
+                sh 'docker run -p 8082:8080 --name my-java-sit -d srank123/my_java:${IMAGE_TAG}'       
             }
         }
     }
