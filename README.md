@@ -55,8 +55,6 @@ Click Pipeline option and submit
 
 then input code to pipeline script
 
-> replace xxxxx with your docker hub account
-
 ```
 pipeline {
     agent any
@@ -64,7 +62,7 @@ pipeline {
     stages {
         stage('Checkout code') {
             steps {
-              git branch: 'main', url: 'https://github.com/srankmeng/my-jenkins-sample.git'
+              git branch: 'main', url: 'https://github.com/srankmeng/workshop-docker-cicd-20240403-04.git'
             }
         }
         stage('Code analysis') {
@@ -84,29 +82,24 @@ pipeline {
         }
         stage('Build images') {
             steps {
-                sh 'docker build -f ./json-server/Dockerfile -t xxxxx/json-server:0.1.0 ./json-server'
+                sh 'docker compose -f ./java/docker-compose.yml build'
             }
         }
         stage('Setup & Provisioning') {
             steps {
-                sh 'docker run -p 3000:3000 --name json-server -d xxxxx/json-server:0.1.0'
+                sh 'docker compose -f ./java/docker-compose.yml up -d'
             }
         }
         stage('Run api automate test') {
             steps {
-                sh 'docker build -f ./newman/Dockerfile -t xxxxx/newman:0.1.0 ./newman'
-                sh '''
-                    docker run --add-host=host.docker.internal:host-gateway xxxxx/newman:0.1.0 \
-                    run demo.postman_collection.json -e environment.postman_environment.json \
-                    -r cli,htmlextra --reporter-htmlextra-export reports/report.html \
-                    --env-var "HOST=host.docker.internal:3000"
-                '''
+                sh 'docker compose -f ./newman/docker-compose.yml build'
+                sh 'docker compose -f ./newman/docker-compose.yml up'
             }
         }
     }
     post {
         always {
-            sh 'docker rm -f json-server || true'
+            sh 'docker compose -f ./java/docker-compose.yml down'
         }
     }
 }
@@ -122,15 +115,15 @@ Add 'Push Docker Image to Docker Hub' stage after `stage('Run api automate test'
 
 ```
 stage('Push Docker Image to Docker Hub') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'docker_hub'
-        , passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-            sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
-            sh '''docker image tag xxxxx/json-server:0.1.0 xxxxx/json-server:$BUILD_NUMBER
-                    docker image push xxxxx/json-server:$BUILD_NUMBER'''
-        }        
-    }
-}
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker_hub'
+                , passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                    sh '''docker image tag java:1.0 xxxxx/my_java:$BUILD_NUMBER
+                          docker image push xxxxx/my_java:$BUILD_NUMBER'''
+                }        
+            }
+        }
 ```
 
 Go to docker hub to check images
@@ -139,17 +132,18 @@ Go to docker hub to check images
 
 Add 'Deploy application' stage after `stage('Push Docker Image to Docker Hub')`
 
->replace `xxxxx` with your docker hub account
+> replace `xxxxx` with your docker hub account
 
 ```
 stage('Deploy application') {
     steps {
-        sh 'docker rm -f json-server-dev || true'
-        sh 'docker run -p 3001:3000 --name json-server-dev -d xxxxx/json-server:$BUILD_NUMBER'       
+        sh 'docker stop my-java-dev || true'
+        sh 'docker rm my-java-dev || true'
+        sh 'docker run -p 8081:80 --name my-java-dev -d xxxxx/my_java:$BUILD_NUMBER'       
     }
 }
 ```
-Go to `http://localhost:3001/`
+Go to `http://localhost:8081`
 
 ### 3.4 Separate CD from CI pipelines
 Create the new pipeline name: `demo_deploy_pipeline` then input code to pipeline script
@@ -164,8 +158,9 @@ pipeline {
     stages {
         stage('Deploy application') {
             steps {
-                sh 'docker rm -f json-server-dev || true'
-                sh 'docker run -p 3001:3000 --name json-server-dev -d xxxxx/json-server:${IMAGE_TAG}'       
+                sh 'docker stop my-java-dev || true'
+                sh 'docker rm my-java-dev || true'
+                sh 'docker run -p 8081:80 --name my-java-dev -d xxxxx/my_java:${IMAGE_TAG}'       
             }
         }
     }
@@ -175,6 +170,7 @@ pipeline {
         }
     }
 }
+
 ```
 
 Back to the first pipeline:
@@ -185,7 +181,7 @@ Back to the first pipeline:
 ```
     post {
         always {
-            sh 'docker rm -f json-server || true'
+            sh 'docker compose -f ./java/docker-compose.yml down'
         }
         success {
             script {

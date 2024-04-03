@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout code') {
             steps {
-              git branch: 'main', url: 'https://github.com/srankmeng/my-jenkins-sample.git'
+              git branch: 'main', url: 'https://github.com/srankmeng/workshop-docker-cicd-20240403-04.git'
             }
         }
         stage('Code analysis') {
