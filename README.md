@@ -198,10 +198,6 @@ Back to the first pipeline:
 Go to the first pipeline: Configure > Build Triggers > Poll SCM > input `* * * * *`
 
 
-## 4. Blue Ocean
+## 4. Blue Ocean - plugin
 
 Manage Jenkins > Plugins > Available plugins > search `blue ocean` > checked and install
-
-
-
-
