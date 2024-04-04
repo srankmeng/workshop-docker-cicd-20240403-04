@@ -45,6 +45,8 @@ Click `Add credential` button
 
 ## 3. Create & Setup pipelines
 
+![CI flow](ci-flow.png)
+
 ### 3.1 CI Pipeline
 
 On first page click `+ New Item` menu
