@@ -43,8 +43,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker_hub'
                 , passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
                     sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
-                    sh '''docker image tag my_json_server:1.0 srank123/my_json_server:$BUILD_NUMBER
-                            docker image push srank123/my_json_server:$BUILD_NUMBER'''
+                    sh '''docker image tag my_json_server:1.0 $DOCKER_USER/my_json_server:$BUILD_NUMBER
+                            docker image push $DOCKER_USER/my_json_server:$BUILD_NUMBER'''
                 }        
             }
         }
