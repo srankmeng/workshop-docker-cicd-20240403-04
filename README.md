@@ -84,12 +84,12 @@ pipeline {
         }
         stage('Build images') {
             steps {
-                sh 'docker compose -f ./java/docker-compose.yml build'
+                sh 'docker compose -f ./json-server/docker-compose.yml build'
             }
         }
         stage('Setup & Provisioning') {
             steps {
-                sh 'docker compose -f ./java/docker-compose.yml up -d'
+                sh 'docker compose -f ./json-server/docker-compose.yml up -d'
             }
         }
         stage('Run api automate test') {
@@ -101,7 +101,7 @@ pipeline {
     }
     post {
         always {
-            sh 'docker compose -f ./java/docker-compose.yml down'
+            sh 'docker compose -f ./json-server/docker-compose.yml down'
         }
     }
 }
@@ -121,8 +121,8 @@ stage('Push Docker Image to Docker Hub') {
         withCredentials([usernamePassword(credentialsId: 'docker_hub'
         , passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
             sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
-            sh '''docker image tag java:1.0 xxxxx/my_java:$BUILD_NUMBER
-                    docker image push xxxxx/my_java:$BUILD_NUMBER'''
+            sh '''docker image tag my_json_server:1.0 xxxxx/my_json_server:$BUILD_NUMBER
+                    docker image push xxxxx/my_json_server:$BUILD_NUMBER'''
         }        
     }
 }
@@ -139,9 +139,9 @@ Add 'Deploy application' stage after `stage('Push Docker Image to Docker Hub')`
 ```
 stage('Deploy application') {
     steps {
-        sh 'docker stop my-java-dev || true'
-        sh 'docker rm my-java-dev || true'
-        sh 'docker run -p 8081:8080 --name my-java-dev -d xxxxx/my_java:$BUILD_NUMBER'       
+        sh 'docker stop my_json_server_dev  || true'
+        sh 'docker rm my_json_server_dev || true'
+        sh 'docker run -p 8081:3000 --name my_json_server_dev -d xxxxx/my_json_server:$BUILD_NUMBER'       
     }
 }
 ```
@@ -160,9 +160,9 @@ pipeline {
     stages {
         stage('Deploy application') {
             steps {
-                sh 'docker stop my-java-dev || true'
-                sh 'docker rm my-java-dev || true'
-                sh 'docker run -p 8081:8080 --name my-java-dev -d xxxxx/my_java:${IMAGE_TAG}'       
+                sh 'docker stop my_json_server_dev || true'
+                sh 'docker rm my_json_server_dev || true'
+                sh 'docker run -p 8081:3000 --name my_json_server_dev -d xxxxx/my_json_server:${IMAGE_TAG}'       
             }
         }
     }
@@ -183,7 +183,7 @@ Back to the first pipeline:
 ```
     post {
         always {
-            sh 'docker compose -f ./java/docker-compose.yml down'
+            sh 'docker compose -f ./json-server/docker-compose.yml down'
         }
         success {
             script {

@@ -24,12 +24,12 @@ pipeline {
         }
         stage('Build images') {
             steps {
-                sh 'docker compose -f ./java/docker-compose.yml build'
+                sh 'docker compose -f ./json-server/docker-compose.yml build'
             }
         }
         stage('Setup & Provisioning') {
             steps {
-                sh 'docker compose -f ./java/docker-compose.yml up -d'
+                sh 'docker compose -f ./json-server/docker-compose.yml up -d'
             }
         }
         stage('Run api automate test') {
@@ -43,15 +43,15 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker_hub'
                 , passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
                     sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
-                    sh '''docker image tag java:1.0 srank123/my_java:$BUILD_NUMBER
-                          docker image push srank123/my_java:$BUILD_NUMBER'''
+                    sh '''docker image tag my_json_server:1.0 srank123/my_json_server:$BUILD_NUMBER
+                            docker image push srank123/my_json_server:$BUILD_NUMBER'''
                 }        
             }
         }
     }
     post {
         always {
-            sh 'docker compose -f ./java/docker-compose.yml down'
+            sh 'docker compose -f ./json-server/docker-compose.yml down'
         }
         success {
             script {

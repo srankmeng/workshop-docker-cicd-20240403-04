@@ -1,13 +1,13 @@
 {
 	"info": {
 		"_postman_id": "e07fa83d-3e76-4586-b8dc-4029b7348283",
-		"name": "demo pipeline",
+		"name": "demo",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "9475914"
 	},
 	"item": [
 		{
-			"name": "hello",
+			"name": "posts",
 			"event": [
 				{
 					"listen": "test",
@@ -17,10 +17,35 @@
 							"    pm.response.to.have.status(200);",
 							"});",
 							"",
-							"pm.test(\"Body is correct\", function () {",
-							"    pm.response.to.have.body(\"Hello, World!\");",
-							"});",
-							""
+							"var schema = {",
+							"    \"$schema\": \"https://json-schema.org/draft/2019-09/schema\",",
+							"    \"type\": \"array\",",
+							"    \"default\": [],",
+							"    \"items\": {",
+							"        \"type\": \"object\",",
+							"        \"required\": [",
+							"            \"id\",",
+							"            \"title\",",
+							"            \"views\"",
+							"        ],",
+							"        \"properties\": {",
+							"            \"id\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"title\": {",
+							"                \"type\": \"string\"",
+							"            },",
+							"            \"views\": {",
+							"                \"type\": \"integer\"",
+							"            }",
+							"        }",
+							"    }",
+							"};",
+							"",
+							"var data = pm.response.json();",
+							"pm.test('Schema is valid', function () {",
+							"    pm.expect(tv4.validate(data, schema)).to.be.true;",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -52,12 +77,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{HOST}}/hello",
+					"raw": "{{HOST}}/posts",
 					"host": [
 						"{{HOST}}"
 					],
 					"path": [
-						"hello"
+						"posts"
 					]
 				}
 			},
